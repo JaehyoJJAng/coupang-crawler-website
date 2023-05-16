@@ -1,0 +1,31 @@
+name: build coupang project
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  #   pull_request:
+  #     - main
+
+jobs:
+  coupang:
+    name: Build coupang project to EB
+    runs-on: ubuntu-latest
+    steps:
+      - name: "1. github runner에 레포지토리 체크아웃"
+        uses: actions/checkout@v3
+      
+      - name: "2. 도커 이미지 빌드"
+        run: |
+          docker build --tag yshrim12/coupang:latest ./coupang-app
+      
+      - name: "3. 도커 로그인"
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          username: {% raw %} ${{ secrets.DOCKER_USERNAME }}  {% endraw %}
+          password: {% raw %} ${{ secrets.DOCKER_PASSWORD }}  {% endraw %}
+      
+      - name: "4. 도커 이미지 푸쉬"
+        run: |
+          docker push yshrim12/coupang:latest

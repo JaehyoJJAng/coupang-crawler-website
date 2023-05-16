@@ -39,8 +39,10 @@ jobs:
 
       - name: "5. Generate deployment package"
         run: |
-          mkdir -p deploy
-          cp docker-compose.yml deploy/docker-compose.yml
+          mkdir deploy nginx
+          cp -R docker-compose.yml deploy/docker-compose.yml
+          cp -R coupang-app deploy
+          cp -R nginx/nginx.conf deploy/nginx/nginx.conf
           cd deploy && zip -r deploy.zip .
       
       - name: "6. Deploy to EB"

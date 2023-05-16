@@ -39,7 +39,7 @@ jobs:
 
       - name: "5. Generate deployment package"
         run: |
-          mkdir deploy nginx
+          mkdir -p deploy/nginx
           cp -R docker-compose.yml deploy/docker-compose.yml
           cp -R coupang-app deploy
           cp -R nginx/nginx.conf deploy/nginx/nginx.conf

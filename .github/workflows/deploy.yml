@@ -13,20 +13,44 @@ jobs:
     name: Build coupang project to EB
     runs-on: ubuntu-latest
     steps:
-      - name: "1. github runner에 레포지토리 체크아웃"
+      - name: "0. Get current time"
+        uses: 1466587594/get-current-time@v2 
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00"
+
+      - name: "1. github runner's repository checkout"
         uses: actions/checkout@v3
       
-      - name: "2. 도커 이미지 빌드"
+      - name: "2. Build docker image"
         run: |
           docker build --tag yshrim12/coupang:latest ./coupang-app
       
-      - name: "3. 도커 로그인"
+      - name: "3. Docker Login"
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           username:  ${{ secrets.DOCKER_USERNAME }}  
           password:  ${{ secrets.DOCKER_PASSWORD }}  
       
-      - name: "4. 도커 이미지 푸쉬"
+      - name: "4. Docker image push"
         run: |
           docker push yshrim12/coupang:latest
+
+      - name: "5. Generate deployment package"
+        run: |
+          mkdir -p deploy
+          cp docker-compose.yml deploy/docker-compose.yml
+          cd deploy && zip -r deploy.zip .
+      
+      - name: "6. Deploy to EB"
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key:  ${{ secrets.AWS_ACCES_KEY_ID }}  
+          aws_secret_key:  ${{ secrets.AWS_SECRET_KEY }}  
+          application_name: coupang-eb
+          environment_name: Coupang-eb-env
+          version_label:  github-action-${{ steps.current-time.outputs.formattedTime }} 
+          region: ap-northeast-2
+          deployment_package: deploy/deploy.zip
 
